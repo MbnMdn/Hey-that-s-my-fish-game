@@ -16,6 +16,7 @@ void game_name();
 void start_page();
 void how_to_play();
 void number_of_players();
+void turn(number);
 int full_or_empty(int f_or_e[8][8], int x, int y, int i);
 int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]);
 void draw_map(int mahi[8][8]);
@@ -24,6 +25,7 @@ int possible(int f_or_e[8][8], int x, int y,int x4, int y4);
 void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8][8], int kashi[4], int score[4]);
 void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]);
 int number;
+
 //------------------------------------------------------------------------------------------------------
 int main(){
 	al_init();
@@ -54,7 +56,7 @@ int main(){
 		}
 		while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
 		
-		if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && inBound(100,70,340,120,event.mouse.x,event.mouse.y)){
+		if(inBound(100,70,340,120,event.mouse.x,event.mouse.y)){
 	    	    do{
      	         	number_of_players();	
 		    	    al_flip_display();
@@ -62,7 +64,6 @@ int main(){
 	            }
             	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
     	
-            	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ){
      	    	if     (inBound(220,290,300,370,event.mouse.x,event.mouse.y)){
      	    		    n_of_players = 2;
 			    	    number = 2; 
@@ -77,9 +78,8 @@ int main(){
 		    	    	n_of_players = 4;
 						number = 4; 	
 				   }
-			         	
-			    }  
-		}
+			}  
+		
 		else if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && inBound(430,70,770,120,event.mouse.x,event.mouse.y)){
 		    	do{
      	         	how_to_play();	
@@ -214,92 +214,8 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
 							x1 = ((int)((event.mouse.x - 136)/65)) * 65  + 112 + 65/2;
 					y1 = ((int)y1) * (37.79 * 1.5) + (37.79 * 0.2) + 5;
                 
- if(n_of_players==4){
-    	ALLEGRO_BITMAP *pink4, *blue4, *yellow4, *green4, *empty4 ;
-    	ALLEGRO_BITMAP *pink_score, *blue_score, *yellow_score, *green_score; 
-    	pink4        = al_load_bitmap("pink4.png");
-    	blue4        = al_load_bitmap("blue4.png");
-	    yellow4      = al_load_bitmap("yellow4.png");
-    	green4       = al_load_bitmap("green4.png");
-    	empty4       = al_load_bitmap("empty4.png");
-        pink_score   = al_load_bitmap("pink_score.png");
-        blue_score   = al_load_bitmap("blue_score.png");
-        yellow_score = al_load_bitmap("yellow_score.png");
-        green_score  = al_load_bitmap("green_score.png");
-        
-        al_draw_bitmap(empty4,550,0,0);
-			     	
-					switch(i){
-						case 1:
-						al_draw_bitmap(blue4,550,0,0);
-						al_draw_bitmap(pink_score,25,50,0);
-						break;
-						case 2:
-						al_draw_bitmap(yellow4,550,0,0);
-						al_draw_bitmap(blue_score,25,150,0);
-						break;
-						case 3:
-						al_draw_bitmap(green4,550,0,0);
-						al_draw_bitmap(yellow_score,25,250,0);
-						break;
-						case 4:
-						al_draw_bitmap(pink4,550,0,0);
-						al_draw_bitmap(green_score,25,350,0);
-						break;
-					}
- }
  
- if(n_of_players==3){
-    	ALLEGRO_BITMAP *pink3, *blue3, *yellow3, *empty3;
-    	ALLEGRO_BITMAP *pink_score, *blue_score, *yellow_score;
-    	pink3        = al_load_bitmap("pink3.png");
-    	blue3        = al_load_bitmap("blue3.png");
-	    yellow3      = al_load_bitmap("yellow3.png");
-    	empty3       = al_load_bitmap("empty3.png");
-    	pink_score   = al_load_bitmap("pink_score.png");
-        blue_score   = al_load_bitmap("blue_score.png");
-        yellow_score = al_load_bitmap("yellow_score.png");
-    	
-	    al_draw_bitmap(empty3,622,50,0);
-			     	
-					switch(i){
-						case 1:
-						al_draw_bitmap(blue3,622,50,0);	
-						al_draw_bitmap(pink_score,25,100,0);
-						break;
-						case 2:
-						al_draw_bitmap(yellow3,622,50,0);
-						al_draw_bitmap(blue_score,25,200,0);
-						break;
-						case 3:
-						al_draw_bitmap(pink3,622,50,0);
-						al_draw_bitmap(yellow_score,25,300,0);
-						break;
-					}
- }
- 
- if(n_of_players==2){
-    	ALLEGRO_BITMAP *pink2, *blue2,  *empty2, *pink_score, *blue_score;
-    	pink2        = al_load_bitmap("pink2.png");
-    	blue2        = al_load_bitmap("blue2.png");
-    	empty2       = al_load_bitmap("empty2.png");
-    	pink_score   = al_load_bitmap("pink_score.png");
-        blue_score   = al_load_bitmap("blue_score.png");
-    
-		al_draw_bitmap(empty2,672,100,0);
-			     	
-					switch(i){
-						case 1:
-						al_draw_bitmap(blue2,672,100,0);
-						al_draw_bitmap(pink_score,25,150,0);	
-						break;
-						case 2:
-						al_draw_bitmap(pink2,672,100,0);
-						al_draw_bitmap(blue_score,25,250,0);
-						break;
-					}
- }
- 
+ turn(number);
 					switch(i){
 						case 1:
 						al_draw_bitmap(p1,  x1, y1, 0);
@@ -665,3 +581,98 @@ void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score
 				}
 			}
 		}
+//-------------------------------------------------------------------------------------------------------
+void turn(number){
+
+int i=1;
+if(i > number){
+	
+	i = 1;
+
+	if(number==4){
+    	ALLEGRO_BITMAP *pink4, *blue4, *yellow4, *green4, *empty4 ;
+    	ALLEGRO_BITMAP *pink_score, *blue_score, *yellow_score, *green_score; 
+    	pink4        = al_load_bitmap("pink4.png");
+    	blue4        = al_load_bitmap("blue4.png");
+	    yellow4      = al_load_bitmap("yellow4.png");
+    	green4       = al_load_bitmap("green4.png");
+    	empty4       = al_load_bitmap("empty4.png");
+        pink_score   = al_load_bitmap("pink_score.png");
+        blue_score   = al_load_bitmap("blue_score.png");
+        yellow_score = al_load_bitmap("yellow_score.png");
+        green_score  = al_load_bitmap("green_score.png");
+        
+        al_draw_bitmap(empty4,550,0,0);
+			     	
+					switch(i){
+						case 1:
+						al_draw_bitmap(blue4,550,0,0);
+						al_draw_bitmap(pink_score,25,50,0);
+						break;
+						case 2:
+						al_draw_bitmap(yellow4,550,0,0);
+						al_draw_bitmap(blue_score,25,150,0);
+						break;
+						case 3:
+						al_draw_bitmap(green4,550,0,0);
+						al_draw_bitmap(yellow_score,25,250,0);
+						break;
+						case 4:
+						al_draw_bitmap(pink4,550,0,0);
+						al_draw_bitmap(green_score,25,350,0);
+						break;
+					}
+    }
+ 
+    if(number==3){
+    	ALLEGRO_BITMAP *pink3, *blue3, *yellow3, *empty3;
+    	ALLEGRO_BITMAP *pink_score, *blue_score, *yellow_score;
+    	pink3        = al_load_bitmap("pink3.png");
+    	blue3        = al_load_bitmap("blue3.png");
+	    yellow3      = al_load_bitmap("yellow3.png");
+    	empty3       = al_load_bitmap("empty3.png");
+    	pink_score   = al_load_bitmap("pink_score.png");
+        blue_score   = al_load_bitmap("blue_score.png");
+        yellow_score = al_load_bitmap("yellow_score.png");
+    	
+	    al_draw_bitmap(empty3,622,50,0);
+			     	
+					switch(i){
+						case 1:
+						al_draw_bitmap(blue3,622,50,0);	
+						al_draw_bitmap(pink_score,25,100,0);
+						break;
+						case 2:
+						al_draw_bitmap(yellow3,622,50,0);
+						al_draw_bitmap(blue_score,25,200,0);
+						break;
+						case 3:
+						al_draw_bitmap(pink3,622,50,0);
+						al_draw_bitmap(yellow_score,25,300,0);
+						break;
+					}
+    }
+ 
+    if(number==2){
+    	ALLEGRO_BITMAP *pink2, *blue2,  *empty2, *pink_score, *blue_score;
+    	pink2        = al_load_bitmap("pink2.png");
+    	blue2        = al_load_bitmap("blue2.png");
+    	empty2       = al_load_bitmap("empty2.png");
+    	pink_score   = al_load_bitmap("pink_score.png");
+        blue_score   = al_load_bitmap("blue_score.png");
+    
+		al_draw_bitmap(empty2,672,100,0);
+			     	
+					switch(i){
+						case 1:
+						al_draw_bitmap(blue2,672,100,0);
+						al_draw_bitmap(pink_score,25,150,0);	
+						break;
+						case 2:
+						al_draw_bitmap(pink2,672,100,0);
+						al_draw_bitmap(blue_score,25,250,0);
+						break;
+					}
+    }
+  }		
+}		
