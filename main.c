@@ -9,6 +9,7 @@
 ALLEGRO_FONT *font;
 ALLEGRO_FONT *font_cheri;
 ALLEGRO_FONT *font_cheri_empty;
+ALLEGRO_FONT *font_score;
 ALLEGRO_COLOR black;
 ALLEGRO_COLOR white;
 ALLEGRO_COLOR blue;
@@ -16,9 +17,9 @@ void game_name();
 void start_page();
 void how_to_play();
 void number_of_players();
-void turn(int number, int i);
+void turn(int number, int i, int score[4]);
 int full_or_empty(int f_or_e[8][8], int x, int y, int i);
-int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]);
+int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4], int score[4]);
 void draw_map(int mahi[8][8]);
 int inBound(int x1,int y1, int x2, int y2, int x3, int y3);
 int possible(int f_or_e[8][8], int x, int y,int x4, int y4);
@@ -38,6 +39,7 @@ int main(){
     font = al_load_ttf_font("Penguin.ttf", 40, 0);
 	font_cheri = al_load_ttf_font("cheri.ttf", 55, 0);
 	font_cheri_empty = al_load_ttf_font("cheri_empty.ttf", 25, 0);
+	font_score = al_load_ttf_font("score.ttf", 35, 0);
 	al_install_mouse();
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	al_register_event_source(queue, al_get_mouse_event_source());
@@ -109,7 +111,7 @@ int main(){
 	}
 	int mahi[8][8] = {0}, kashi[4] = {0}, score[4] = {0}, all_png, i = 1, x1, y1, x2, y2, done, hazf[4] = {10}, s;
 	draw_map(mahi);
-	all_png = location_of_p(n_of_players,f_or_e, hazf);
+	all_png = location_of_p(n_of_players,f_or_e, hazf, score);
 	al_flush_event_queue(queue);
 	while(done != n_of_players){
 		if(i > n_of_players)
@@ -154,12 +156,13 @@ int main(){
 	al_flip_display();
 	al_destroy_event_queue(queue);
 	al_destroy_font(font);
+	al_destroy_font(font_score);
 	al_destroy_display(display);
 	al_uninstall_mouse();
 	return 0;
 }
 //------------------------------------------------------------------------------------------------------
-int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
+int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4], int score[4]){
 	int n_of_png, i, all, all_png;
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	al_register_event_source(queue, al_get_mouse_event_source());
@@ -215,7 +218,7 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
 					y1 = ((int)y1) * (37.79 * 1.5) + (37.79 * 0.2) + 5;
                 
  
- turn(number, i);
+ turn(number, i, score);
 					switch(i){
 						case 1:
 						al_draw_bitmap(p1,  x1, y1, 0);
@@ -512,19 +515,19 @@ void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8
 	switch(i){
 		case 1:
 		al_draw_bitmap(p1,  a2, b2, 0);
-		turn( number,  i);
+		turn( number,  i, score);
 		break;
 		case 2:
 		al_draw_bitmap(p2,  a2, b2, 0);
-		turn( number,  i);
+		turn( number,  i, score);
 		break;
 		case 3:
 		al_draw_bitmap(p3,  a2, b2, 0);
-		turn( number,  i);
+		turn( number,  i, score);
 		break;
 		case 4:
 		al_draw_bitmap(p4,  a2, b2, 0);
-		turn( number,  i);
+		turn( number,  i, score);
 		break;
 	}
 	f_or_e[n][m] = i;
@@ -586,9 +589,8 @@ void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score
 			}
 		}
 //-------------------------------------------------------------------------------------------------------
-void turn(int number, int i){
+void turn(int number, int i, int score[4]){
 if(i > number)
-	
 	i = 1;
 
 	if(number==4){
@@ -607,23 +609,22 @@ if(i > number)
 						case 1:
 						al_draw_bitmap(blue4,550,0,0);
 						al_draw_bitmap(pink_score,25,50,0);
-						al_draw_textf(font_cheri,white,50,70,0,"%d",score[0]);
-						printf("%d",score[0]);
+						al_draw_textf(font_score,white,56,78,0,"%d",score[0]);
 						break;
 						case 2:
 						al_draw_bitmap(yellow4,550,0,0);
 						al_draw_bitmap(blue_score,25,150,0);
-						al_draw_textf(font_cheri,white,50,170,0,"%d",score[1]);
+						al_draw_textf(font_score,white,56,178,0,"%d",score[1]);
 						break;
 						case 3:
 						al_draw_bitmap(green4,550,0,0);
 						al_draw_bitmap(yellow_score,25,250,0);
-						al_draw_textf(font_cheri,white,50,270,0,"%d",score[2]);
+						al_draw_textf(font_score,white,56,278,0,"%d",score[2]);
 						break;
 						case 4:
 						al_draw_bitmap(pink4,550,0,0);
 						al_draw_bitmap(green_score,25,350,0);
-						al_draw_textf(font_cheri,white,50,370,0,"%d",score[3]);
+						al_draw_textf(font_score,white,56,378,0,"%d",score[3]);
 						break;
 					}
     }
@@ -634,25 +635,25 @@ if(i > number)
     	pink3        = al_load_bitmap("pink3.png");
     	blue3        = al_load_bitmap("blue3.png");
 	    yellow3      = al_load_bitmap("yellow3.png");
-    	empty3       = al_load_bitmap("empty3.png");
     	pink_score   = al_load_bitmap("pink_score.png");
         blue_score   = al_load_bitmap("blue_score.png");
         yellow_score = al_load_bitmap("yellow_score.png");
-    	
-	    al_draw_bitmap(empty3,622,50,0);
 			     	
 					switch(i){
 						case 1:
 						al_draw_bitmap(blue3,622,50,0);	
 						al_draw_bitmap(pink_score,25,100,0);
+						al_draw_textf(font_score,white,56,130,0,"%d",score[0]);
 						break;
 						case 2:
 						al_draw_bitmap(yellow3,622,50,0);
 						al_draw_bitmap(blue_score,25,200,0);
+						al_draw_textf(font_score,white,56,230,0,"%d",score[1]);
 						break;
 						case 3:
 						al_draw_bitmap(pink3,622,50,0);
 						al_draw_bitmap(yellow_score,25,300,0);
+						al_draw_textf(font_score,white,56,330,0,"%d",score[2]);
 						break;
 					}
     }
@@ -661,20 +662,19 @@ if(i > number)
     	ALLEGRO_BITMAP *pink2, *blue2,  *empty2, *pink_score, *blue_score;
     	pink2        = al_load_bitmap("pink2.png");
     	blue2        = al_load_bitmap("blue2.png");
-    	empty2       = al_load_bitmap("empty2.png");
     	pink_score   = al_load_bitmap("pink_score.png");
         blue_score   = al_load_bitmap("blue_score.png");
-    
-		al_draw_bitmap(empty2,672,100,0);
 			     	
 					switch(i){
 						case 1:
 						al_draw_bitmap(blue2,672,100,0);
-						al_draw_bitmap(pink_score,25,150,0);	
+						al_draw_bitmap(pink_score,25,150,0);
+						al_draw_textf(font_score,white,56,180,0,"%-d",score[0]);	
 						break;
 						case 2:
 						al_draw_bitmap(pink2,672,100,0);
 						al_draw_bitmap(blue_score,25,250,0);
+						al_draw_textf(font_score,white,56,280,0,"%d",score[1]);
 						break;
 					}
     }		
