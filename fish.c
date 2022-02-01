@@ -7,10 +7,14 @@
 #include <time.h>
 #include <math.h>
 ALLEGRO_FONT *font;
+ALLEGRO_FONT *font_cheri;
+ALLEGRO_FONT *font_cheri_empty;
 ALLEGRO_COLOR black;
 ALLEGRO_COLOR white;
 ALLEGRO_COLOR blue;
-ALLEGRO_BITMAP *background = NULL;
+void game_name();
+void start_page();
+void how_to_play();
 void number_of_players();
 int full_or_empty(int f_or_e[8][8], int x, int y, int i);
 int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]);
@@ -19,45 +23,85 @@ int inBound(int x1,int y1, int x2, int y2, int x3, int y3);
 int possible(int f_or_e[8][8], int x, int y,int x4, int y4);
 void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8][8], int kashi[4], int score[4]);
 void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]);
+int number;
+//------------------------------------------------------------------------------------------------------
 int main(){
 	al_init();
 	ALLEGRO_DISPLAY *display;
 	black = al_map_rgb(0, 0, 0);
 	white = al_map_rgb(255, 255, 255);
-	if (!al_init()) {
-      printf("Could not init Allegro.\n");
-      return 0;
-	}
 	al_init_ttf_addon();
 	al_init_image_addon();
-	background = al_load_bitmap("background.jpg");
 	al_init_primitives_addon();
-	font = al_load_ttf_font("Penguin.ttf", 40, 0);
+    font = al_load_ttf_font("Penguin.ttf", 40, 0);
+	font_cheri = al_load_ttf_font("cheri.ttf", 55, 0);
+	font_cheri_empty = al_load_ttf_font("cheri_empty.ttf", 25, 0);
 	al_install_mouse();
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	al_register_event_source(queue, al_get_mouse_event_source());
 	display = al_create_display(900, 490);
-	if (!display) {
-      printf("Error creating display\n");
-      return 0;
-   	}
-	if (!font) {
-      printf("Error creating font\n");
-      return 0;
-   	}
 	ALLEGRO_EVENT event;
 	int n_of_players = 0, x, y, f_or_e[8][8]={0};
 	while(n_of_players == 0){
-		number_of_players();
+		game_name();
 		al_flip_display();
 		al_wait_for_event(queue, &event);
-		if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ){	
-			if (inBound(220,290,300,370,event.mouse.x,event.mouse.y))
-				n_of_players = 2;
-			else if(inBound(400,290,480,370,event.mouse.x,event.mouse.y))
-				n_of_players = 3;
-			else if(inBound(600,290,680,370,event.mouse.x,event.mouse.y))
-				n_of_players = 4;	
+		if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && inBound(0,0,900,490,event.mouse.x,event.mouse.y)) 
+		do{
+		start_page();	
+		al_flip_display();
+	    al_wait_for_event(queue, &event);	
+		}
+		while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+		
+		if( inBound(100,70,340,120,event.mouse.x,event.mouse.y)){
+	    	    do{
+     	         	number_of_players();	
+		    	    al_flip_display();
+	                al_wait_for_event(queue, &event);
+	            }
+            	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+     	    	if     (inBound(220,290,300,370,event.mouse.x,event.mouse.y)){
+     	    		    n_of_players = 2;
+			    	    number = 2; 
+				    }
+			    	    
+			    else if(inBound(400,290,480,370,event.mouse.x,event.mouse.y)){
+			    	    n_of_players = 3;
+				        number = 3; 
+				   }
+				        
+		    	else if(inBound(600,290,680,370,event.mouse.x,event.mouse.y)){
+		    	    	n_of_players = 4;
+						number = 4; 	
+				   }
+			         	
+			      
+		}
+		else if(inBound(430,70,770,120,event.mouse.x,event.mouse.y)){
+		    	do{
+     	         	how_to_play();	
+		    	    al_flip_display();
+	                al_wait_for_event(queue, &event);
+	            }
+            	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+			    if (inBound(20,400,340,470,event.mouse.x,event.mouse.y)){
+			    	 do{
+     	         	number_of_players();	
+		    	    al_flip_display();
+	                al_wait_for_event(queue, &event);
+	            }
+            	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+
+     	    	if     (inBound(220,290,300,370,event.mouse.x,event.mouse.y))
+			    	    n_of_players = 2;
+			    else if(inBound(400,290,480,370,event.mouse.x,event.mouse.y))
+				        n_of_players = 3;
+		    	else if(inBound(600,290,680,370,event.mouse.x,event.mouse.y))
+			         	n_of_players = 4;	
+			     
+			    	
+				}
 		}
 	}
 	int mahi[8][8] = {0}, kashi[4] = {0}, score[4] = {0}, all_png, i = 1, x1, y1, x2, y2, done, hazf[4] = {10}, s;
@@ -111,6 +155,7 @@ int main(){
 	al_uninstall_mouse();
 	return 0;
 }
+//------------------------------------------------------------------------------------------------------
 int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
 	int n_of_png, i, all, all_png;
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
@@ -167,63 +212,87 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
 					y1 = ((int)y1) * (37.79 * 1.5) + (37.79 * 0.2) + 5;
                 
  if(n_of_players==4){
-    	ALLEGRO_BITMAP *pink4, *blue4, *yellow4, *green4, *empty4;
-    	pink4  = al_load_bitmap("pink4.png");
-    	blue4  = al_load_bitmap("blue4.png");
-	    yellow4= al_load_bitmap("yellow4.png");
-    	green4 = al_load_bitmap("green4.png");
-    	empty4 = al_load_bitmap("empty4.png");
-			     	al_draw_bitmap(empty4,550,0,0);
+    	ALLEGRO_BITMAP *pink4, *blue4, *yellow4, *green4, *empty4 ;
+    	ALLEGRO_BITMAP *pink_score, *blue_score, *yellow_score, *green_score; 
+    	pink4        = al_load_bitmap("pink4.png");
+    	blue4        = al_load_bitmap("blue4.png");
+	    yellow4      = al_load_bitmap("yellow4.png");
+    	green4       = al_load_bitmap("green4.png");
+    	empty4       = al_load_bitmap("empty4.png");
+        pink_score   = al_load_bitmap("pink_score.png");
+        blue_score   = al_load_bitmap("blue_score.png");
+        yellow_score = al_load_bitmap("yellow_score.png");
+        green_score  = al_load_bitmap("green_score.png");
+        
+        al_draw_bitmap(empty4,550,0,0);
+			     	
 					switch(i){
 						case 1:
-						al_draw_bitmap(blue4,550,0,0);	
+						al_draw_bitmap(blue4,550,0,0);
+						al_draw_bitmap(pink_score,25,50,0);
 						break;
 						case 2:
 						al_draw_bitmap(yellow4,550,0,0);
+						al_draw_bitmap(blue_score,25,150,0);
 						break;
 						case 3:
 						al_draw_bitmap(green4,550,0,0);
+						al_draw_bitmap(yellow_score,25,250,0);
 						break;
 						case 4:
 						al_draw_bitmap(pink4,550,0,0);
+						al_draw_bitmap(green_score,25,350,0);
 						break;
 					}
  }
  
  if(n_of_players==3){
     	ALLEGRO_BITMAP *pink3, *blue3, *yellow3, *empty3;
-    	pink3 = al_load_bitmap("pink3.png");
-    	blue3 = al_load_bitmap("blue3.png");
-	    yellow3 = al_load_bitmap("yellow3.png");
-    	empty3 = al_load_bitmap("empty3.png");
-
-			     	al_draw_bitmap(empty3,600,50,0);
+    	ALLEGRO_BITMAP *pink_score, *blue_score, *yellow_score;
+    	pink3        = al_load_bitmap("pink3.png");
+    	blue3        = al_load_bitmap("blue3.png");
+	    yellow3      = al_load_bitmap("yellow3.png");
+    	empty3       = al_load_bitmap("empty3.png");
+    	pink_score   = al_load_bitmap("pink_score.png");
+        blue_score   = al_load_bitmap("blue_score.png");
+        yellow_score = al_load_bitmap("yellow_score.png");
+    	
+	    al_draw_bitmap(empty3,622,50,0);
+			     	
 					switch(i){
 						case 1:
-						al_draw_bitmap(blue3,600,50,0);	
+						al_draw_bitmap(blue3,622,50,0);	
+						al_draw_bitmap(pink_score,25,100,0);
 						break;
 						case 2:
-						al_draw_bitmap(yellow3,600,50,0);
+						al_draw_bitmap(yellow3,622,50,0);
+						al_draw_bitmap(blue_score,25,200,0);
 						break;
 						case 3:
-						al_draw_bitmap(pink3,600,50,0);
+						al_draw_bitmap(pink3,622,50,0);
+						al_draw_bitmap(yellow_score,25,300,0);
 						break;
 					}
  }
  
  if(n_of_players==2){
-    	ALLEGRO_BITMAP *pink2, *blue2,  *empty2;
-    	pink2 = al_load_bitmap("pink2.png");
-    	blue2 = al_load_bitmap("blue2.png");
-    	empty2 = al_load_bitmap("empty2.png");
-
-			     	al_draw_bitmap(empty2,650,100,0);
+    	ALLEGRO_BITMAP *pink2, *blue2,  *empty2, *pink_score, *blue_score;
+    	pink2        = al_load_bitmap("pink2.png");
+    	blue2        = al_load_bitmap("blue2.png");
+    	empty2       = al_load_bitmap("empty2.png");
+    	pink_score   = al_load_bitmap("pink_score.png");
+        blue_score   = al_load_bitmap("blue_score.png");
+    
+		al_draw_bitmap(empty2,672,100,0);
+			     	
 					switch(i){
 						case 1:
-						al_draw_bitmap(blue2,650,100,0);	
+						al_draw_bitmap(blue2,672,100,0);
+						al_draw_bitmap(pink_score,25,150,0);	
 						break;
 						case 2:
-						al_draw_bitmap(pink2,650,100,0);
+						al_draw_bitmap(pink2,672,100,0);
+						al_draw_bitmap(blue_score,25,250,0);
 						break;
 					}
  }
@@ -250,6 +319,7 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
 	}while(all_png);
 	return all;
 }
+//------------------------------------------------------------------------------------------------------
 int full_or_empty(int f_or_e[8][8], int x, int y, int i){
 	int x1, y1 = y/(37.79 * 1.5);
 	if(y1 % 2 == 0)
@@ -263,10 +333,11 @@ int full_or_empty(int f_or_e[8][8], int x, int y, int i){
 	else
 		return 0;
 }
+//------------------------------------------------------------------------------------------------------
 void number_of_players(){
   black = al_map_rgb(0, 0, 0);
-  white = al_map_rgb(255, 255, 255);
-  al_clear_to_color(white);
+  ALLEGRO_BITMAP *background;
+  background = al_load_bitmap("background.jpg"); 
   al_draw_bitmap(background,0,0,0);
   al_draw_text(font,black,115,200,0,"Select Number of Players");
   al_draw_filled_circle(260,330, 48,black);
@@ -276,9 +347,43 @@ void number_of_players(){
   al_draw_filled_circle(640,330, 48,black);
   al_draw_text(font,white,594,300,0,"4531");                                     
 }
+//------------------------------------------------------------------------------------------------------
 void draw_map(int mahi[8][8]){
 	blue = al_map_rgb(173, 207, 212);
 	al_clear_to_color(blue);
+	ALLEGRO_BITMAP  *fish_line, *pink4, *pink3, *pink2, *pink_score, *blue_score, *yellow_score, *green_score; ;
+	fish_line    = al_load_bitmap("fish_line.png");
+	pink4        = al_load_bitmap("pink4.png");
+	pink3        = al_load_bitmap("pink3.png");
+	pink2        = al_load_bitmap("pink2.png");
+	pink_score   = al_load_bitmap("pink_score.png");
+    blue_score   = al_load_bitmap("blue_score.png");
+    yellow_score = al_load_bitmap("yellow_score.png");
+    green_score  = al_load_bitmap("green_score.png");
+	al_draw_bitmap(fish_line,700,0,1);
+	al_draw_bitmap(fish_line,800,0,0);
+
+	 if(number==4){
+	 	al_draw_bitmap(pink4,550,0,0);
+	 	al_draw_bitmap(pink_score,25,50,0);
+		al_draw_bitmap(blue_score,25,150,0);
+		al_draw_bitmap(yellow_score,25,250,0);
+		al_draw_bitmap(green_score,25,350,0);
+     }
+	 
+	  if(number==3){
+	 	al_draw_bitmap(pink3,622,50,0);
+	 	al_draw_bitmap(pink_score,25,100,0);
+		al_draw_bitmap(blue_score,25,200,0);
+		al_draw_bitmap(yellow_score,25,300,0);
+	 }
+	 
+	  if(number==2){
+	 	al_draw_bitmap(pink2,672,100,0);
+	 	al_draw_bitmap(pink_score,25,150,0);
+		al_draw_bitmap(blue_score,25,250,0);
+	 }
+	
 	int i,j,x = 75/2+130,y = 0, line = 1, num_of_tile[3];
 	num_of_tile[2] = 10;
 	num_of_tile[1] = 20;
@@ -324,11 +429,33 @@ void draw_map(int mahi[8][8]){
 		y += 75*(1 - 1/(2*(sqrt(3)))) + 4;
 	}
 }
+//------------------------------------------------------------------------------------------------------
 int inBound(int x1,int y1, int x2, int y2, int x3, int y3){
 	if(x3>=x1 && x3<= x2 && y3>=y1 && y3<= y2 )	
 		return 1;
 	return 0;
 }
+//------------------------------------------------------------------------------------------------------
+void game_name(){
+  ALLEGRO_BITMAP *welcome;
+  welcome = al_load_bitmap("welcome.jpeg"); 
+  al_draw_bitmap(welcome,0,0,0);
+  al_draw_text(font_cheri,white,188,90,0,"hey that's my fish!");
+  al_draw_text(font_cheri_empty,white,355,170,0,"click to enter");
+}
+//------------------------------------------------------------------------------------------------------
+void start_page(){
+  ALLEGRO_BITMAP *start;
+  start = al_load_bitmap("start.jpeg"); 
+  al_draw_bitmap(start,0,0,0);
+}
+//------------------------------------------------------------------------------------------------------
+void how_to_play(){
+  ALLEGRO_BITMAP *how;
+  how = al_load_bitmap("how.png"); 
+  al_draw_bitmap(how,0,0,0);
+}
+//-------------------------------------------------------------------------------------------------------
 int possible(int f_or_e[8][8], int x, int y,int x4, int y4){
 	int x3, y3;
 	x3 = x;
@@ -432,6 +559,7 @@ int possible(int f_or_e[8][8], int x, int y,int x4, int y4){
 	}while((f_or_e[x3][y3] == 0) && (x3>=0 && x3<= 7 && y3>=0 && y3<= 7));
 	return 0;
 }
+//-------------------------------------------------------------------------------------------------------
 void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8][8], int kashi[4], int score[4]){
 	ALLEGRO_BITMAP *removed = al_load_bitmap("empty67.png");
 	ALLEGRO_BITMAP *p1, *p2, *p3, *p4 ;
@@ -479,6 +607,7 @@ void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8
 	f_or_e[n][m] = i;
 	f_or_e[a][b] = 5;
 }
+//-------------------------------------------------------------------------------------------------------
 void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]){
 	int f, u, count, count2 = 0;
 		for(f=0;f<8;f++){
