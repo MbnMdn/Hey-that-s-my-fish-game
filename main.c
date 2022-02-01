@@ -16,7 +16,7 @@ void game_name();
 void start_page();
 void how_to_play();
 void number_of_players();
-void turn(number);
+void turn(int number, int i);
 int full_or_empty(int f_or_e[8][8], int x, int y, int i);
 int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]);
 void draw_map(int mahi[8][8]);
@@ -25,7 +25,7 @@ int possible(int f_or_e[8][8], int x, int y,int x4, int y4);
 void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8][8], int kashi[4], int score[4]);
 void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]);
 int number;
-
+int score[4];
 //------------------------------------------------------------------------------------------------------
 int main(){
 	al_init();
@@ -215,7 +215,7 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4]){
 					y1 = ((int)y1) * (37.79 * 1.5) + (37.79 * 0.2) + 5;
                 
  
- turn(number);
+ turn(number, i);
 					switch(i){
 						case 1:
 						al_draw_bitmap(p1,  x1, y1, 0);
@@ -512,15 +512,19 @@ void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8
 	switch(i){
 		case 1:
 		al_draw_bitmap(p1,  a2, b2, 0);
+		turn( number,  i);
 		break;
 		case 2:
 		al_draw_bitmap(p2,  a2, b2, 0);
+		turn( number,  i);
 		break;
 		case 3:
 		al_draw_bitmap(p3,  a2, b2, 0);
+		turn( number,  i);
 		break;
 		case 4:
 		al_draw_bitmap(p4,  a2, b2, 0);
+		turn( number,  i);
 		break;
 	}
 	f_or_e[n][m] = i;
@@ -582,10 +586,8 @@ void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score
 			}
 		}
 //-------------------------------------------------------------------------------------------------------
-void turn(number){
-
-int i=1;
-if(i > number){
+void turn(int number, int i){
+if(i > number)
 	
 	i = 1;
 
@@ -596,30 +598,32 @@ if(i > number){
     	blue4        = al_load_bitmap("blue4.png");
 	    yellow4      = al_load_bitmap("yellow4.png");
     	green4       = al_load_bitmap("green4.png");
-    	empty4       = al_load_bitmap("empty4.png");
         pink_score   = al_load_bitmap("pink_score.png");
         blue_score   = al_load_bitmap("blue_score.png");
         yellow_score = al_load_bitmap("yellow_score.png");
         green_score  = al_load_bitmap("green_score.png");
         
-        al_draw_bitmap(empty4,550,0,0);
-			     	
 					switch(i){
 						case 1:
 						al_draw_bitmap(blue4,550,0,0);
 						al_draw_bitmap(pink_score,25,50,0);
+						al_draw_textf(font_cheri,white,50,70,0,"%d",score[0]);
+						printf("%d",score[0]);
 						break;
 						case 2:
 						al_draw_bitmap(yellow4,550,0,0);
 						al_draw_bitmap(blue_score,25,150,0);
+						al_draw_textf(font_cheri,white,50,170,0,"%d",score[1]);
 						break;
 						case 3:
 						al_draw_bitmap(green4,550,0,0);
 						al_draw_bitmap(yellow_score,25,250,0);
+						al_draw_textf(font_cheri,white,50,270,0,"%d",score[2]);
 						break;
 						case 4:
 						al_draw_bitmap(pink4,550,0,0);
 						al_draw_bitmap(green_score,25,350,0);
+						al_draw_textf(font_cheri,white,50,370,0,"%d",score[3]);
 						break;
 					}
     }
@@ -673,6 +677,5 @@ if(i > number){
 						al_draw_bitmap(blue_score,25,250,0);
 						break;
 					}
-    }
-  }		
+    }		
 }		
