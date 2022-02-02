@@ -3,6 +3,8 @@
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_ttf.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_audio.h>
+#include <allegro5/allegro_acodec.h>
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
@@ -16,6 +18,9 @@ ALLEGRO_COLOR white;
 ALLEGRO_COLOR blue;
 ALLEGRO_COLOR orange;
 ALLEGRO_COLOR dblue;
+ALLEGRO_SAMPLE *song = NULL;
+ALLEGRO_SAMPLE *winner_song = NULL;
+ALLEGRO_SAMPLE_INSTANCE *song_instance = NULL;
 void game_name();
 void start_page();
 void how_to_play();
@@ -30,29 +35,39 @@ int possible(int f_or_e[8][8], int x, int y,int x4, int y4);
 void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8][8], int kashi[4], int score[4]);
 void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]);
 int number;
+
 //------------------------------------------------------------------------------------------------------
 int main(){
 	al_init();
 	ALLEGRO_DISPLAY *display;
-	black = al_map_rgb(0,0,0);
+	black = al_map_rgb(0,0,0);                                                      // COLORS
 	white = al_map_rgb(255,255,255);
 	orange= al_map_rgb(255,66,21);
 	dblue = al_map_rgb(0,21,110);
 	al_init_ttf_addon();
 	al_init_image_addon();
 	al_init_primitives_addon();
-    font = al_load_ttf_font("Penguin.ttf", 40, 0);
+	al_install_audio();
+	al_init_acodec_addon();
+    font = al_load_ttf_font("Penguin.ttf", 40, 0);                                  // FONTS
 	font_cheri = al_load_ttf_font("cheri.ttf", 55, 0);
 	font_cheri_empty = al_load_ttf_font("cheri_empty.ttf", 25, 0);
 	font_score = al_load_ttf_font("score.ttf", 35, 0);
 	font_winner= al_load_ttf_font("winner.ttf", 40, 0);
+	al_reserve_samples(3);                                                        // SONG AND AUDIO
+	song = al_load_sample("song.ogg");                                          
+	winner_song=al_load_sample("winner.ogg");           
+	song_instance = al_create_sample_instance(song);
+	al_set_sample_instance_playmode(song_instance , ALLEGRO_PLAYMODE_LOOP);
+	al_attach_sample_instance_to_mixer(song_instance, al_get_default_mixer());
 	al_install_mouse();
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	al_register_event_source(queue, al_get_mouse_event_source());
 	display = al_create_display(900, 490);
 	ALLEGRO_EVENT event;
 	int n_of_players = 0, x, y, f_or_e[8][8]={0};
-	while(n_of_players == 0){
+	al_play_sample_instance(song_instance);                                       // BACKGROUND SONG PLAYS
+	while(n_of_players == 0){                              
 		game_name();
 		al_flip_display();
 		al_wait_for_event(queue, &event);
@@ -63,7 +78,7 @@ int main(){
 	    al_wait_for_event(queue, &event);	
 		}while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
 		
-		if(inBound(100,70,340,120,event.mouse.x,event.mouse.y)){
+		if(inBound(100,70,340,120,event.mouse.x,event.mouse.y)){                          // USER SELECTS NUMBER OF PLAYERS (  X HOW TO PLAY X  )
 	    	    do{
      	         	number_of_players();	
 		    	    al_flip_display();
@@ -85,17 +100,17 @@ int main(){
 						number = 4; 	
 				   }
 			}  
-		
+			
 		else if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && inBound(430,70,770,120,event.mouse.x,event.mouse.y)){
 		    	do{
-     	         	how_to_play();	
+     	         	how_to_play();	                                                        // HOW TO PLAY??
 		    	    al_flip_display();
 	                al_wait_for_event(queue, &event);
 	            }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
 	            
 			    if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && inBound(20,400,340,470,event.mouse.x,event.mouse.y)){
 			    	 do{
-     	         	number_of_players();	
+     	         	number_of_players();	                                               // USER SELECTS NUMBER OF PLAYERS ( AFTER HOW TO PLAY )
 		    	    al_flip_display();
 	                al_wait_for_event(queue, &event);
 	                }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
@@ -116,8 +131,8 @@ int main(){
 			    }  	
 				}
 		}
-	}
-	int mahi[8][8] = {0}, kashi[4] = {0}, score[4] = {0}, all_png, i = 1, x1, y1, x2, y2, done, hazf[4] = {10}, s;
+	}                                                                                                                         
+	int mahi[8][8] = {0}, kashi[4] = {0}, score[4] = {0}, all_png, i = 1, x1, y1, x2, y2, done, hazf[4] = {10}, s;            //GAMING STARTS HERE
 	draw_map(mahi);
 	all_png = location_of_p(n_of_players,f_or_e, hazf, score);
 	al_flush_event_queue(queue);
@@ -129,25 +144,25 @@ int main(){
 			continue;
 		}
 		do{
-			al_wait_for_event(queue, &event);
+			al_wait_for_event(queue, &event);                             // USER'S FIRST CLICK 
 			x1 = event.mouse.x;
 			y1 = event.mouse.y;
 		}while(event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP);
 		do{
-			al_wait_for_event(queue, &event);
+			al_wait_for_event(queue, &event);                            // USER'S SECOND CLICK
 			x2 = event.mouse.x;
 			y2 = event.mouse.y;
 		}while(event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP);
 		y = y1/(37.79 * 1.5);
-		if(y % 2 == 0)
-			x = (x1 - 75/2 - 133)/65;
+		if(y % 2 == 0)                                                  // DETECTS EVEN OR ODD ROW
+			x = (x1 - 75/2 - 133)/65;                                   // ( CLICK AREA CALCULATIONS ... )
 		else
 			x = (x1 - 136)/65;
 		int x4, y4 = y2/(37.79 * 1.5);
 		if(y4 % 2 == 0)
 			x4 = (x2 - 75/2 - 133)/65;
 		else
-			x4 = (x2 - 136)/65;
+			x4 = (x2 - 136)/65;                                         
 		if((inBound(136, 0, 136+8*65, 8*(75*(1 - 1/(2*(sqrt(3)))) + 4), x2, y2)) && (inBound(136, 0, 136+8*65, 8*(75*(1 - 1/(2*(sqrt(3)))) + 4), x1, y1)) && (f_or_e[x][y] == i)){
 			if(possible( f_or_e, x, y, x4, y4) == 1){
 				movement(f_or_e, x1, y1, x2, y2, i, mahi, kashi, score);
@@ -161,19 +176,25 @@ int main(){
 			if(hazf[s] == 0)
 				done++;			
 	}
-	do{
+	al_stop_sample_instance(song_instance);	
+	do{                                                                        // END OF THE GAME & TIME TO SHOW THE WINNER
+		al_play_sample(winner_song, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, 0);        // WINNER AUDIO PLAYS
      	winner(score, kashi);
 		al_flip_display();
 	    al_wait_for_event(queue, &event);
-	    }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
-		
+	    }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );                 // LAST CLICK TO EXIT
+	
+	/*DESTROY AND UNINSTALL*/
 	al_flip_display();
-	al_destroy_event_queue(queue);
+	al_destroy_event_queue(queue);                                             
 	al_destroy_font(font);
 	al_destroy_font(font_cheri);
 	al_destroy_font(font_cheri_empty);
 	al_destroy_font(font_score);
 	al_destroy_font(font_winner);
+	al_destroy_sample(song);
+	al_destroy_sample(winner_song);
+	al_destroy_sample_instance(song_instance);
 	al_destroy_display(display);
 	al_uninstall_mouse();
 	return 0;
@@ -184,7 +205,7 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4], int score[4]){
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	al_register_event_source(queue, al_get_mouse_event_source());
 	ALLEGRO_EVENT event;
-	ALLEGRO_BITMAP *p1, *p2, *p3, *p4 ;
+	ALLEGRO_BITMAP *p1, *p2, *p3, *p4 ;            // PENGUIN PICS
 	p4 = al_load_bitmap("green.png");
 	p3 = al_load_bitmap("yellow.png");
 	p2 = al_load_bitmap("blue.png");
@@ -215,7 +236,7 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4], int score[4]){
 			}
 			al_wait_for_event(queue, &event);
 			
-			if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ){ 
+			if(event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ){                            // PREVENT DETECTING INVALID CLICK AREA AS VALID
 				if(!inBound(625,  0,700, 58,event.mouse.x, event.mouse.y)    //1
 			    && !inBound(625,115,700,170,event.mouse.x, event.mouse.y)    
 			    && !inBound(625,230,700,285,event.mouse.x, event.mouse.y)
@@ -259,7 +280,7 @@ int location_of_p(int n_of_players,int f_or_e[8][8], int hazf[4], int score[4]){
 	return all;
 }
 //------------------------------------------------------------------------------------------------------
-int full_or_empty(int f_or_e[8][8], int x, int y, int i){
+int full_or_empty(int f_or_e[8][8], int x, int y, int i){      // DETECT IF THE TILE IS EMPTY OR NOT
 	int x1, y1 = y/(37.79 * 1.5);
 	if(y1 % 2 == 0)
 		x1 = (x - 75/2 - 133)/65;
@@ -273,7 +294,7 @@ int full_or_empty(int f_or_e[8][8], int x, int y, int i){
 		return 0;
 }
 //------------------------------------------------------------------------------------------------------
-void number_of_players(){
+void number_of_players(){                                       
   black = al_map_rgb(0, 0, 0);
   ALLEGRO_BITMAP *background;
   background = al_load_bitmap("background.jpg"); 
@@ -288,7 +309,7 @@ void number_of_players(){
 }
 //------------------------------------------------------------------------------------------------------
 void draw_map(int mahi[8][8]){
-	blue = al_map_rgb(173, 207, 212);
+	blue = al_map_rgb(173, 207, 212);   // BACKGROUND COLOR
 	al_clear_to_color(blue);
 	ALLEGRO_BITMAP  *fish_line, *pink4, *pink3, *pink2, *pink_score, *blue_score, *yellow_score, *green_score; ;
 	fish_line    = al_load_bitmap("fish_line.png");
@@ -299,10 +320,10 @@ void draw_map(int mahi[8][8]){
     blue_score   = al_load_bitmap("blue_score.png");
     yellow_score = al_load_bitmap("yellow_score.png");
     green_score  = al_load_bitmap("green_score.png");
-	al_draw_bitmap(fish_line,700,0,1);
+	al_draw_bitmap(fish_line,700,0,1);                           // DECORATIVE PICS
 	al_draw_bitmap(fish_line,800,0,0);
 
-	 if(number==4){
+	 if(number==4){                                             // APPEARS FIRST TIME... SO THE SIDES OF GAME PAGE WON'T BE EMPTY
 	 	al_draw_bitmap(pink4,550,0,0);
 	 	al_draw_bitmap(pink_score,25,50,0);
 		al_draw_bitmap(blue_score,25,150,0);
@@ -327,7 +348,7 @@ void draw_map(int mahi[8][8]){
 	num_of_tile[2] = 10;
 	num_of_tile[1] = 20;
 	num_of_tile[0] = 30;
-    // 0=1 tile - 1=2 tiles - 2=3 tiles 
+    // 0=1 fish in tile - 1=2 fishs tile - 2=3 fishs in tile 
 	ALLEGRO_BITMAP *fish3, *fish2, *fish1, *fish;
 	fish3 = al_load_bitmap("3d.png");
 	fish2 = al_load_bitmap("2d.png");
@@ -369,13 +390,13 @@ void draw_map(int mahi[8][8]){
 	}
 }
 //------------------------------------------------------------------------------------------------------
-int inBound(int x1,int y1, int x2, int y2, int x3, int y3){
+int inBound(int x1,int y1, int x2, int y2, int x3, int y3){         // CHECKS IF THE CLICK IS IN THE GIVEN AREA OR NOT
 	if(x3>=x1 && x3<= x2 && y3>=y1 && y3<= y2 )	
 		return 1;
 	return 0;
 }
 //------------------------------------------------------------------------------------------------------
-void game_name(){
+void game_name(){                                                   
   ALLEGRO_BITMAP *welcome;
   welcome = al_load_bitmap("welcome.jpeg"); 
   al_draw_bitmap(welcome,0,0,0);
@@ -606,7 +627,7 @@ void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score
 			}
 		}
 //-------------------------------------------------------------------------------------------------------
-void turn(int number, int i, int score[4]){
+void turn(int number, int i, int score[4]){                    // THIS FUNCTION UPDATES THE 'TURN' PHOTO & SCORE TABLE 
 if(i > number)
 	i = 1;
 
@@ -697,7 +718,7 @@ if(i > number)
     }		
 }
 //-------------------------------------------------------------------------------------------------------
-void winner(int score[4],int kashi[4]){
+void winner(int score[4],int kashi[4]){                        // DETECS THE WINNER 
 	ALLEGRO_BITMAP *winner;
     winner = al_load_bitmap("winner.jpeg"); 
     al_draw_bitmap(winner,0,0,0);
