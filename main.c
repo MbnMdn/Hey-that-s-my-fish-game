@@ -416,13 +416,13 @@ void how_to_play(){
   al_draw_bitmap(how,0,0,0);
 }
 //-------------------------------------------------------------------------------------------------------
-int possible(int f_or_e[8][8], int x, int y,int x4, int y4){
+int possible(int f_or_e[8][8], int x, int y,int x4, int y4){      // RETURNS 1 IF THE MOVEMENT IS POSSIBLE , 0 IF IMPOSSIBLE
 	int x3, y3;
 	x3 = x;
 	y3 = y;
 	if(!(x4>=0 && x4<=7) || !(y4>=0 && y4<=7))
 		return 0;
-	if(f_or_e[x4][y4] != 0)
+	if(f_or_e[x4][y4] != 0)                 // THE TILE ISN'T EMPTY ( ANOTHER PENGUIN IS ON IT )
 		return 3;
 	do{//bala rast
 		if(y3 % 2 == 0){
@@ -572,10 +572,10 @@ void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8
 	f_or_e[a][b] = 5;
 }
 //-------------------------------------------------------------------------------------------------------
-void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]){
-	int f, u, count, count2 = 0;
-		for(f=0;f<8;f++){
-			for(u=0;u<8;u++){
+void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]){       // CHECKS ALL THE TILES
+	int f, u, count, count2 = 0;                                                                         // IF A TILE HAS PENGUIN ON IT BUT THE PENGUIN CAN'T MOVE TO ANY DIRECTION , IT WILL BE REMOVED
+		for(f=0;f<8;f++){                                                                                // & ITS FISHS WILL BE ADDED TO PENGUIN'S SCORE
+			for(u=0;u<8;u++){                                                                             
 					count = 0;
 					if((f_or_e[f][u] !=0) && (f_or_e[f][u] !=5)){
 					if((u == 0) || (u == 7))
@@ -607,7 +607,7 @@ void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score
 						count++;
 					if(possible( f_or_e, f, u, f, u+1) == 3)
 						count++;
-					if(count == 6){
+					if(count == 6){                                                        // 6 MEANS THERE IS NO AVAILABLE DIRECTION TO MOVE
 						ALLEGRO_BITMAP *removed = al_load_bitmap("empty67.png");
 						count2++;
 						int m1, m2 = u * (75*(1 - 1/(2*(sqrt(3)))) + 4) - 0.9;
