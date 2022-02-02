@@ -10,12 +10,16 @@ ALLEGRO_FONT *font;
 ALLEGRO_FONT *font_cheri;
 ALLEGRO_FONT *font_cheri_empty;
 ALLEGRO_FONT *font_score;
+ALLEGRO_FONT *font_winner;
 ALLEGRO_COLOR black;
 ALLEGRO_COLOR white;
 ALLEGRO_COLOR blue;
+ALLEGRO_COLOR orange;
+ALLEGRO_COLOR dblue;
 void game_name();
 void start_page();
 void how_to_play();
+void winner(int score[4],int kashi[4]);
 void number_of_players();
 void turn(int number, int i, int score[4]);
 int full_or_empty(int f_or_e[8][8], int x, int y, int i);
@@ -26,13 +30,14 @@ int possible(int f_or_e[8][8], int x, int y,int x4, int y4);
 void movement(int f_or_e[8][8], int x1, int y1,int x2, int y2, int i, int mahi[8][8], int kashi[4], int score[4]);
 void finish_and_delete(int f_or_e[8][8], int mahi[8][8], int kashi[4], int score[4], int hazf[4]);
 int number;
-int score[4];
 //------------------------------------------------------------------------------------------------------
 int main(){
 	al_init();
 	ALLEGRO_DISPLAY *display;
-	black = al_map_rgb(0, 0, 0);
-	white = al_map_rgb(255, 255, 255);
+	black = al_map_rgb(0,0,0);
+	white = al_map_rgb(255,255,255);
+	orange= al_map_rgb(255,66,21);
+	dblue = al_map_rgb(0,21,110);
 	al_init_ttf_addon();
 	al_init_image_addon();
 	al_init_primitives_addon();
@@ -40,6 +45,7 @@ int main(){
 	font_cheri = al_load_ttf_font("cheri.ttf", 55, 0);
 	font_cheri_empty = al_load_ttf_font("cheri_empty.ttf", 25, 0);
 	font_score = al_load_ttf_font("score.ttf", 35, 0);
+	font_winner= al_load_ttf_font("winner.ttf", 40, 0);
 	al_install_mouse();
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	al_register_event_source(queue, al_get_mouse_event_source());
@@ -55,16 +61,14 @@ int main(){
 		start_page();	
 		al_flip_display();
 	    al_wait_for_event(queue, &event);	
-		}
-		while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+		}while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
 		
 		if(inBound(100,70,340,120,event.mouse.x,event.mouse.y)){
 	    	    do{
      	         	number_of_players();	
 		    	    al_flip_display();
 	                al_wait_for_event(queue, &event);
-	            }
-            	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+	            }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
     	
      	    	if     (inBound(220,290,300,370,event.mouse.x,event.mouse.y)){
      	    		    n_of_players = 2;
@@ -87,25 +91,29 @@ int main(){
      	         	how_to_play();	
 		    	    al_flip_display();
 	                al_wait_for_event(queue, &event);
-	            }
-            	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+	            }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+	            
 			    if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && inBound(20,400,340,470,event.mouse.x,event.mouse.y)){
 			    	 do{
      	         	number_of_players();	
 		    	    al_flip_display();
 	                al_wait_for_event(queue, &event);
-	            }
-            	while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+	                }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
     	
-            	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ){
-     	    	if     (inBound(220,290,300,370,event.mouse.x,event.mouse.y))
-			    	    n_of_players = 2;
-			    else if(inBound(400,290,480,370,event.mouse.x,event.mouse.y))
-				        n_of_players = 3;
-		    	else if(inBound(600,290,680,370,event.mouse.x,event.mouse.y))
-			         	n_of_players = 4;	
-			    }  
-			    	
+               	if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP ){
+     	        	if     (inBound(220,290,300,370,event.mouse.x,event.mouse.y)){
+     	    	     	n_of_players = 2;
+			    	    number = 2;
+				    }
+			        else if(inBound(400,290,480,370,event.mouse.x,event.mouse.y)){
+			        	n_of_players = 3;
+				        number = 3;
+				    }
+		    	    else if(inBound(600,290,680,370,event.mouse.x,event.mouse.y)){
+		    		    n_of_players = 4;
+						number = 4;	
+				    }    	
+			    }  	
 				}
 		}
 	}
@@ -146,17 +154,26 @@ int main(){
 				finish_and_delete(f_or_e, mahi, kashi, score, hazf);
 				al_flip_display();
 				i++;
-			}
+			}	
 		}
 		done = 0;
 		for(s = 0;s<n_of_players;s++)
 			if(hazf[s] == 0)
-				done++;
+				done++;			
 	}
+	do{
+     	winner(score, kashi);
+		al_flip_display();
+	    al_wait_for_event(queue, &event);
+	    }while (event.type != ALLEGRO_EVENT_MOUSE_BUTTON_UP );
+		
 	al_flip_display();
 	al_destroy_event_queue(queue);
 	al_destroy_font(font);
+	al_destroy_font(font_cheri);
+	al_destroy_font(font_cheri_empty);
 	al_destroy_font(font_score);
+	al_destroy_font(font_winner);
 	al_destroy_display(display);
 	al_uninstall_mouse();
 	return 0;
@@ -609,22 +626,22 @@ if(i > number)
 						case 1:
 						al_draw_bitmap(blue4,550,0,0);
 						al_draw_bitmap(pink_score,25,50,0);
-						al_draw_textf(font_score,white,56,78,0,"%d",score[0]);
+						al_draw_textf(font_score,white,73,80,ALLEGRO_ALIGN_CENTRE,"%d",score[0]);
 						break;
 						case 2:
 						al_draw_bitmap(yellow4,550,0,0);
 						al_draw_bitmap(blue_score,25,150,0);
-						al_draw_textf(font_score,white,56,178,0,"%d",score[1]);
+						al_draw_textf(font_score,white,73,180,ALLEGRO_ALIGN_CENTRE,"%d",score[1]);
 						break;
 						case 3:
 						al_draw_bitmap(green4,550,0,0);
 						al_draw_bitmap(yellow_score,25,250,0);
-						al_draw_textf(font_score,white,56,278,0,"%d",score[2]);
+						al_draw_textf(font_score,white,73,280,ALLEGRO_ALIGN_CENTRE,"%d",score[2]);
 						break;
 						case 4:
 						al_draw_bitmap(pink4,550,0,0);
 						al_draw_bitmap(green_score,25,350,0);
-						al_draw_textf(font_score,white,56,378,0,"%d",score[3]);
+						al_draw_textf(font_score,white,73,380,ALLEGRO_ALIGN_CENTRE,"%d",score[3]);
 						break;
 					}
     }
@@ -643,17 +660,17 @@ if(i > number)
 						case 1:
 						al_draw_bitmap(blue3,622,50,0);	
 						al_draw_bitmap(pink_score,25,100,0);
-						al_draw_textf(font_score,white,56,130,0,"%d",score[0]);
+						al_draw_textf(font_score,white,73,130,ALLEGRO_ALIGN_CENTRE,"%d",score[0]);
 						break;
 						case 2:
 						al_draw_bitmap(yellow3,622,50,0);
 						al_draw_bitmap(blue_score,25,200,0);
-						al_draw_textf(font_score,white,56,230,0,"%d",score[1]);
+						al_draw_textf(font_score,white,73,230,ALLEGRO_ALIGN_CENTRE,"%d",score[1]);
 						break;
 						case 3:
 						al_draw_bitmap(pink3,622,50,0);
 						al_draw_bitmap(yellow_score,25,300,0);
-						al_draw_textf(font_score,white,56,330,0,"%d",score[2]);
+						al_draw_textf(font_score,white,73,330,ALLEGRO_ALIGN_CENTRE,"%d",score[2]);
 						break;
 					}
     }
@@ -669,13 +686,99 @@ if(i > number)
 						case 1:
 						al_draw_bitmap(blue2,672,100,0);
 						al_draw_bitmap(pink_score,25,150,0);
-						al_draw_textf(font_score,white,56,180,0,"%-d",score[0]);	
+						al_draw_textf(font_score,white,73,180,ALLEGRO_ALIGN_CENTRE,"%d",score[0]);	
 						break;
 						case 2:
 						al_draw_bitmap(pink2,672,100,0);
 						al_draw_bitmap(blue_score,25,250,0);
-						al_draw_textf(font_score,white,56,280,0,"%d",score[1]);
+						al_draw_textf(font_score,white,73,280,ALLEGRO_ALIGN_CENTRE,"%d",score[1]);
 						break;
 					}
     }		
-}		
+}
+//-------------------------------------------------------------------------------------------------------
+void winner(int score[4],int kashi[4]){
+	ALLEGRO_BITMAP *winner;
+    winner = al_load_bitmap("winner.jpeg"); 
+    al_draw_bitmap(winner,0,0,0);
+    al_draw_text(font_winner,orange,545,370,ALLEGRO_ALIGN_CENTRE,"-> YOU WIN <-");
+    
+	     if(score[0]>score[1] && score[0]>score[2] && score[0]>score[3]) al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+    else if(score[1]>score[0] && score[1]>score[2] && score[1]>score[3]) al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+    else if(score[2]>score[0] && score[2]>score[1] && score[2]>score[3]) al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+    else if(score[3]>score[0] && score[3]>score[1] && score[3]>score[2]) al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+    
+    else if(score[0]==score[1]){
+    	if(kashi[0]>kashi[1])               al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+    	else if (kashi[0]<kashi[1])         al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+    	else                                al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink , blue");
+	}
+    else if(score[0]==score[2]){
+    	if(kashi[0]>kashi[2])               al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+    	else if (kashi[0]<kashi[2])         al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+    	else                                al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink , yellow");
+	}
+    else  if(score[0]==score[3]){
+        if(kashi[0]>kashi[3])               al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+    	else if (kashi[0]<kashi[3])         al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+    	else                                al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink , green");
+	}
+    else if(score[1]==score[2]){
+    	if(kashi[1]>kashi[2])               al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+    	else if (kashi[1]<kashi[2])         al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+    	else                                al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue , yellow");
+	}
+	else if(score[1]==score[3]){
+    	if(kashi[1]>kashi[3])               al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+    	else if (kashi[1]<kashi[3])         al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+    	else                                al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue , green");
+	}
+	else if(score[2]==score[3]){
+    	if(kashi[2]>kashi[3])               al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+    	else if (kashi[2]<kashi[3])         al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+    	else                                al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow , green");
+	}
+	else if(score[0]==score[1]==score[2]){
+		     if(kashi[0]>kashi[1]  && kashi[0]>kashi[2])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+		else if(kashi[1]>kashi[0]  && kashi[1]>kashi[2])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+		else if(kashi[2]>kashi[0]  && kashi[2]>kashi[1])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+		else if(kashi[0]==kashi[1] && kashi[0]>kashi[2])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue,pink");
+		else if(kashi[0]==kashi[2] && kashi[0]>kashi[1])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,pink");
+		else if(kashi[1]==kashi[2] && kashi[1]>kashi[0])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,blue");
+		else if(kashi[0]==kashi[1] && kashi[0]==kashi[2])  al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,blue,pink");
+	}  
+	else if(score[0]==score[1]==score[3]){
+		     if(kashi[0]>kashi[1]  && kashi[0]>kashi[3])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+		else if(kashi[1]>kashi[0]  && kashi[1]>kashi[3])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+		else if(kashi[3]>kashi[0]  && kashi[3]>kashi[1])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+		else if(kashi[0]==kashi[1] && kashi[0]>kashi[3])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue,pink");
+		else if(kashi[0]==kashi[3] && kashi[0]>kashi[1])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green,pink");
+		else if(kashi[1]==kashi[3] && kashi[1]>kashi[0])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green,blue");
+		else if(kashi[0]==kashi[1] && kashi[0]==kashi[3])  al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green,blue,pink");
+	}  
+	else if(score[1]==score[2]==score[3]){
+		     if(kashi[3]>kashi[1]  && kashi[3]>kashi[2])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+		else if(kashi[1]>kashi[3]  && kashi[1]>kashi[2])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+		else if(kashi[2]>kashi[3]  && kashi[2]>kashi[1])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+		else if(kashi[3]==kashi[1] && kashi[3]>kashi[2])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue,green");
+		else if(kashi[3]==kashi[2] && kashi[3]>kashi[1])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,green");
+		else if(kashi[1]==kashi[2] && kashi[1]>kashi[3])   al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,blue");
+		else if(kashi[3]==kashi[1] && kashi[3]==kashi[2])  al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,blue,green");
+	}  
+	else if(score[0]==score[1]==score[2]==score[3]){
+	         if(kashi[0]>kashi[1] && kashi[0]>kashi[2] && kashi[0]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink");
+		else if(kashi[1]>kashi[0] && kashi[1]>kashi[2] && kashi[1]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue");
+		else if(kashi[2]>kashi[0] && kashi[2]>kashi[1] && kashi[2]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow");
+		else if(kashi[3]>kashi[0] && kashi[3]>kashi[1] && kashi[3]>kashi[2])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"green");
+		else if(kashi[0]==kashi[1]&& kashi[0]>kashi[2] && kashi[0]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink,blue");
+		else if(kashi[0]==kashi[2]&& kashi[0]>kashi[1] && kashi[0]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink,yellow");
+		else if(kashi[0]==kashi[3]&& kashi[0]>kashi[1] && kashi[0]>kashi[2])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink,green");
+		else if(kashi[1]==kashi[2]&& kashi[1]>kashi[0] && kashi[1]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue,yellow");
+		else if(kashi[1]==kashi[3]&& kashi[1]>kashi[0] && kashi[1]>kashi[2])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue,green");
+		else if(kashi[2]==kashi[3]&& kashi[2]>kashi[0] && kashi[2]>kashi[1])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"yellow,green");
+		else if(kashi[0]==kashi[1]&& kashi[1]==kashi[2]&& kashi[0]>kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink,blue,yellow");
+		else if(kashi[0]==kashi[1]&& kashi[1]==kashi[3]&& kashi[0]>kashi[2])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink,blue,green");
+		else if(kashi[1]==kashi[2]&& kashi[1]==kashi[3]&& kashi[1]>kashi[0])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"blue,yellow,green");
+		else if(kashi[0]==kashi[1]&& kashi[1]==kashi[2]&&kashi[2]==kashi[3])    al_draw_text(font_winner,dblue,545,420,ALLEGRO_ALIGN_CENTRE,"pink,blue,yellow,green");
+	}
+}	
